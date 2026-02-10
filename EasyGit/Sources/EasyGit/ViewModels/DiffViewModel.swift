@@ -103,20 +103,16 @@ final class DiffViewModel {
 
         for hunk in diff.hunks {
             let hunkLines = hunk.lines.filter { $0.type != .header }
-            // Check if any selected lines are in this hunk
             let hasSelected = hunkLines.contains { selectedIDs.contains($0.id) }
             guard hasSelected else { continue }
 
             var patchLines: [String] = []
-            var oldStart = 0
-            var newStart = 0
             var oldCount = 0
             var newCount = 0
 
-            // Parse original hunk header for starting line numbers
             let headerNums = parseHunkHeader(hunk.header)
-            oldStart = headerNums.oldStart
-            newStart = headerNums.newStart
+            let oldStart = headerNums.oldStart
+            let newStart = headerNums.newStart
 
             for line in hunkLines {
                 let isSelected = selectedIDs.contains(line.id)
@@ -130,19 +126,25 @@ final class DiffViewModel {
                     if isSelected {
                         patchLines.append("+\(line.content)")
                         newCount += 1
+                    } else if forStaging {
+                        // Staging: skip unselected additions (don't stage them)
                     } else {
-                        // Unselected addition: skip it (becomes context-invisible)
-                        // Don't include — just skip
+                        // Unstaging: unselected additions become context (keep them staged)
+                        patchLines.append(" \(line.content)")
+                        oldCount += 1
+                        newCount += 1
                     }
                 case .removal:
                     if isSelected {
                         patchLines.append("-\(line.content)")
                         oldCount += 1
-                    } else {
-                        // Unselected removal: keep as context
+                    } else if forStaging {
+                        // Staging: unselected removals become context (don't stage them)
                         patchLines.append(" \(line.content)")
                         oldCount += 1
                         newCount += 1
+                    } else {
+                        // Unstaging: skip unselected removals (keep them staged)
                     }
                 case .header:
                     break
