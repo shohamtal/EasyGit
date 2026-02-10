@@ -51,6 +51,15 @@ struct HeaderView: View {
                     .frame(height: 16)
                     .background(Theme.borderColor)
 
+                // Push button
+                Button {
+                    Task { await appVM.push() }
+                } label: {
+                    Label("Push", systemImage: "arrow.up.circle")
+                        .font(Theme.uiFont)
+                }
+                .buttonStyle(HeaderButtonStyle())
+
                 // Pull button
                 Button {
                     Task { await appVM.pull() }
@@ -129,6 +138,25 @@ struct HeaderView: View {
         } message: {
             let branches = appVM.pruneBranches
             Text("The following local branches will be deleted (they are already deleted on remote):\n\n\(branches.joined(separator: "\n"))")
+        }
+        // Sensitive data push warning
+        .alert("Potential Sensitive Data Detected", isPresented: .init(
+            get: { appVM.showPushSecretsWarning },
+            set: { if !$0 { appVM.showPushSecretsWarning = false } }
+        )) {
+            Button("Push Anyway", role: .destructive) {
+                Task {
+                    appVM.showPushSecretsWarning = false
+                    await appVM.performPush()
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                appVM.showPushSecretsWarning = false
+            }
+        } message: {
+            let count = appVM.detectedSecrets.count
+            let summary = appVM.detectedSecrets.prefix(5).map { "\($0.pattern) in \($0.file)" }.joined(separator: "\n")
+            Text("Found \(count) potential secret\(count == 1 ? "" : "s") in unpushed commits:\n\n\(summary)\(count > 5 ? "\n...and \(count - 5) more" : "")")
         }
     }
 }

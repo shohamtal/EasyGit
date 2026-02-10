@@ -36,16 +36,6 @@ struct CommitAreaView: View {
                 .buttonStyle(SecondaryButtonStyle())
                 .keyboardShortcut("r", modifiers: [.command, .shift])
 
-                Button("Push") {
-                    Task { await appVM.push() }
-                }
-                .buttonStyle(SecondaryButtonStyle())
-
-                Button("Pull") {
-                    Task { await appVM.pull() }
-                }
-                .buttonStyle(SecondaryButtonStyle())
-
                 Spacer()
 
                 Button {
@@ -74,25 +64,6 @@ struct CommitAreaView: View {
             }
         } message: {
             Text("You are committing directly to \"\(appVM.protectedBranchName)\", which is a protected branch. Are you sure?")
-        }
-        // Sensitive data push warning
-        .alert("Potential Sensitive Data Detected", isPresented: .init(
-            get: { appVM.showPushSecretsWarning },
-            set: { if !$0 { appVM.showPushSecretsWarning = false } }
-        )) {
-            Button("Push Anyway", role: .destructive) {
-                Task {
-                    appVM.showPushSecretsWarning = false
-                    await appVM.performPush()
-                }
-            }
-            Button("Cancel", role: .cancel) {
-                appVM.showPushSecretsWarning = false
-            }
-        } message: {
-            let count = appVM.detectedSecrets.count
-            let summary = appVM.detectedSecrets.prefix(5).map { "\($0.pattern) in \($0.file)" }.joined(separator: "\n")
-            Text("Found \(count) potential secret\(count == 1 ? "" : "s") in unpushed commits:\n\n\(summary)\(count > 5 ? "\n...and \(count - 5) more" : "")")
         }
     }
 

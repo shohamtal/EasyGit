@@ -19,15 +19,28 @@ A native macOS Git GUI built with SwiftUI. Manage your repositories, stage files
 - **Multiple Themes** — Dark, Light, Light Blue, and Glitter (purple glow)
 - **File Watcher** — Auto-refreshes when files change on disk
 
+## Download
+
+Grab the latest `EasyGit.zip` from the [Releases](../../releases) page. Unzip and double-click `EasyGit.app` to run — no build tools needed.
+
 ## Requirements
 
 - macOS 14 (Sonoma) or later
-- Swift 5.9+ / Xcode 15+
 - Git installed at `/usr/bin/git`
 
-## Building
+## Building from Source
 
-### From Terminal (SPM)
+If you prefer to build it yourself, you'll need Swift 5.9+ / Xcode 15+.
+
+### Quick Build (recommended)
+
+```bash
+./build.sh
+```
+
+This compiles the project and creates `EasyGit.app` ready to run.
+
+### Manual Build
 
 ```bash
 cd EasyGit
@@ -36,32 +49,12 @@ swift build -c release
 
 The binary will be at `.build/arm64-apple-macosx/release/EasyGit` (Apple Silicon) or `.build/x86_64-apple-macosx/release/EasyGit` (Intel).
 
-### Creating the .app Bundle
-
-After building, create the app bundle:
-
-```bash
-# Build release binary
-cd EasyGit
-swift build -c release
-
-# Create .app structure
-mkdir -p ../EasyGit.app/Contents/MacOS
-mkdir -p ../EasyGit.app/Contents/Resources
-
-# Copy binary (adjust path for your architecture)
-cp .build/arm64-apple-macosx/release/EasyGit ../EasyGit.app/Contents/MacOS/
-chmod +x ../EasyGit.app/Contents/MacOS/EasyGit
-```
-
-The `Info.plist` is already included at `EasyGit.app/Contents/Info.plist`.
-
 ### Running
 
-Double-click `EasyGit.app` or run directly:
+Double-click `EasyGit.app`, or run directly:
 
 ```bash
-./EasyGit.app/Contents/MacOS/EasyGit
+open EasyGit.app
 ```
 
 Or run without bundling:
