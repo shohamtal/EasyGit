@@ -8,7 +8,7 @@ No Electron. No Java. No 500MB download. Just a fast, native SwiftUI app that la
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-<video src="demo.mp4" width="100%" autoplay loop muted playsinline></video>
+https://github.com/user-attachments/assets/ca499dc3-2472-4388-8b9d-6e0995d9a9d7
 
 ---
 
