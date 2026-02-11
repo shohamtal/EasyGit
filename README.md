@@ -55,9 +55,30 @@ EasyGit watches your repo directory for changes. Edit a file in your editor, and
 
 ---
 
-## Download
+## Install
 
-Grab the latest `EasyGit.zip` from the [Releases](../../releases) page. Unzip and double-click `EasyGit.app` to run — no build tools needed.
+### Homebrew (recommended)
+
+```bash
+brew tap shohamtal/easygit
+brew install --cask easygit
+```
+
+### Manual Download
+
+Grab the latest `EasyGit.zip` from the [Releases](../../releases) page. Unzip and double-click `EasyGit.app` to run.
+
+### Update
+
+```bash
+brew upgrade --cask easygit
+```
+
+### Uninstall
+
+```bash
+brew uninstall --cask easygit
+```
 
 ## Requirements
 
