@@ -16,8 +16,12 @@ struct HeaderView: View {
                     let remoteBranches = appVM.branches.filter { $0.isRemote }
 
                     ForEach(localBranches) { branch in
-                        Button(branch.name) {
-                            Task { await appVM.checkoutBranch(branch.name) }
+                        if branch.isCurrent {
+                            Label(branch.name, systemImage: "checkmark")
+                        } else {
+                            Button(branch.name) {
+                                Task { await appVM.checkoutBranch(branch.name) }
+                            }
                         }
                     }
 
@@ -29,6 +33,13 @@ struct HeaderView: View {
                                 Task { await appVM.checkoutBranch(branch.name) }
                             }
                         }
+                    }
+
+                    Divider()
+                    Button {
+                        appVM.showManageBranches = true
+                    } label: {
+                        Label("Manage Branches...", systemImage: "list.bullet")
                     }
                 } label: {
                     HStack(spacing: 6) {
@@ -121,6 +132,18 @@ struct HeaderView: View {
             set: { appVM.showNewBranchSheet = $0 }
         )) {
             NewBranchSheet()
+        }
+        .sheet(isPresented: .init(
+            get: { appVM.showDeleteBranchConfirmation },
+            set: { appVM.showDeleteBranchConfirmation = $0 }
+        )) {
+            DeleteBranchSheet()
+        }
+        .sheet(isPresented: .init(
+            get: { appVM.showManageBranches },
+            set: { appVM.showManageBranches = $0 }
+        )) {
+            ManageBranchesSheet()
         }
         .alert(
             "Delete Local Branches",

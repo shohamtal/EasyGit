@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1E2E"/>
+      <stop offset="100%" style="stop-color:#11111B"/>
+    </linearGradient>
+    <linearGradient id="branch" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#89B4FA"/>
+      <stop offset="100%" style="stop-color:#74C7EC"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B4BEFE"/>
+      <stop offset="100%" style="stop-color:#89B4FA"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="32" y="32" width="960" height="960" rx="220" ry="220" fill="url(#bg)"/>
+  <!-- Subtle inner border -->
+  <rect x="32" y="32" width="960" height="960" rx="220" ry="220" fill="none" stroke="#313244" stroke-width="3"/>
+  <!-- Diamond shape (merge paths) -->
+  <!-- Top node -->
+  <circle cx="512" cy="220" r="52" fill="url(#glow)"/>
+  <!-- Left diverge node -->
+  <circle cx="320" cy="512" r="52" fill="url(#branch)"/>
+  <!-- Right diverge node -->
+  <circle cx="704" cy="512" r="52" fill="url(#branch)"/>
+  <!-- Bottom merge node -->
+  <circle cx="512" cy="804" r="52" fill="url(#glow)"/>
+  <!-- Connecting lines - top to left -->
+  <line x1="475" y1="258" x2="355" y2="475" stroke="url(#branch)" stroke-width="28" stroke-linecap="round"/>
+  <!-- Connecting lines - top to right -->
+  <line x1="549" y1="258" x2="669" y2="475" stroke="url(#branch)" stroke-width="28" stroke-linecap="round"/>
+  <!-- Connecting lines - left to bottom -->
+  <line x1="355" y1="549" x2="475" y2="766" stroke="url(#branch)" stroke-width="28" stroke-linecap="round"/>
+  <!-- Connecting lines - right to bottom -->
+  <line x1="669" y1="549" x2="549" y2="766" stroke="url(#branch)" stroke-width="28" stroke-linecap="round"/>
+</svg>

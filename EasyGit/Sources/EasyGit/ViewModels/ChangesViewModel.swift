@@ -27,11 +27,12 @@ final class ChangesViewModel {
                 self.unstagedFiles = result.unstaged
                 self.isLoading = false
 
-                // Clear selection if file no longer present
+                // Clear selection if file no longer present in the same section
                 if let selected = self.selectedFile {
-                    let allFiles = result.staged + result.unstaged
-                    if !allFiles.contains(where: { $0.path == selected.path }) {
+                    let relevantFiles = self.selectedFileIsStaged ? result.staged : result.unstaged
+                    if !relevantFiles.contains(where: { $0.path == selected.path }) {
                         self.selectedFile = nil
+                        self.selectedFileIsStaged = false
                     }
                 }
 

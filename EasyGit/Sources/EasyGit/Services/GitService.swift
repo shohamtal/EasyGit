@@ -194,6 +194,11 @@ actor GitService {
         _ = try await runLogged(["fetch", "--prune"], at: repoPath, onOutput: onOutput)
     }
 
+    func deleteRemoteBranch(at repoPath: String, branch: String, onOutput: @Sendable @escaping (String, Bool) -> Void) async throws {
+        onOutput("$ git push origin --delete \(branch)\n", false)
+        _ = try await runLogged(["push", "origin", "--delete", branch], at: repoPath, onOutput: onOutput)
+    }
+
     func deleteLocalBranches(at repoPath: String, branches: [String], onOutput: @Sendable @escaping (String, Bool) -> Void) async throws {
         // If current branch is in the delete list, switch to a safe branch first
         let current = try await currentBranch(at: repoPath)

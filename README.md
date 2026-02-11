@@ -66,7 +66,14 @@ brew install --cask easygit
 
 ### Manual Download
 
-Grab the latest `EasyGit.zip` from the [Releases](../../releases) page. Unzip and double-click `EasyGit.app` to run.
+Grab the latest `EasyGit.zip` from the [Releases](../../releases) page. Unzip, then remove the quarantine attribute before running:
+
+```bash
+xattr -cr EasyGit.app
+open EasyGit.app
+```
+
+> **Why?** macOS quarantines apps downloaded from the internet. Since EasyGit isn't signed with an Apple Developer certificate, Gatekeeper will show "app is damaged" unless you clear the quarantine flag first.
 
 ### Update
 

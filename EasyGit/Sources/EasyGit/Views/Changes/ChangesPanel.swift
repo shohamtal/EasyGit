@@ -184,6 +184,10 @@ struct ChangesPanel: View {
         for file in changesVM.selectedUnstagedFiles {
             await changesVM.stageFile(file, repoPath: repo.path)
         }
+        changesVM.selectedFile = nil
+        changesVM.selectedFileIsStaged = false
+        changesVM.selectedUnstagedPaths = []
+        diffVM.clear()
     }
 
     private func unstage(_ file: GitFileChange) async {
@@ -196,11 +200,18 @@ struct ChangesPanel: View {
     private func stageAll() async {
         guard let repo = appVM.selectedRepo else { return }
         await changesVM.stageAll(repoPath: repo.path)
+        changesVM.selectedFile = nil
+        changesVM.selectedFileIsStaged = false
+        changesVM.selectedUnstagedPaths = []
+        diffVM.clear()
     }
 
     private func unstageAll() async {
         guard let repo = appVM.selectedRepo else { return }
         await changesVM.unstageAll(repoPath: repo.path)
+        changesVM.selectedFile = nil
+        changesVM.selectedFileIsStaged = false
+        diffVM.clear()
     }
 
     private func revertSelected() async {
@@ -221,14 +232,22 @@ struct ChangesPanel: View {
     }
 
     /// After staging/unstaging, select the neighbor file if it still exists in the refreshed list.
+    /// If no neighbor is found, clear panel 3.
     private func selectNeighborIfAvailable(_ neighbor: GitFileChange?, staged: Bool, repoPath: String) {
-        guard let neighbor else { return }
-        let list = staged ? changesVM.stagedFiles : changesVM.unstagedFiles
-        guard let match = list.first(where: { $0.path == neighbor.path }) else { return }
-        if !staged {
-            changesVM.selectedUnstagedPaths = [match.path]
+        if let neighbor {
+            let list = staged ? changesVM.stagedFiles : changesVM.unstagedFiles
+            if let match = list.first(where: { $0.path == neighbor.path }) {
+                if !staged {
+                    changesVM.selectedUnstagedPaths = [match.path]
+                }
+                selectFile(match, staged: staged)
+                return
+            }
         }
-        selectFile(match, staged: staged)
+        // No neighbor found — clear diff panel
+        changesVM.selectedFile = nil
+        changesVM.selectedFileIsStaged = false
+        diffVM.clear()
     }
 }
 

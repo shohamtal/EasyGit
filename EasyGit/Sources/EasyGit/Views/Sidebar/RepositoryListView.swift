@@ -78,21 +78,29 @@ struct RepositoryListView: View {
                 Spacer()
             }
         }
+        .sheet(isPresented: .init(
+            get: { appVM.showMultiAddConfirmation },
+            set: { appVM.showMultiAddConfirmation = $0 }
+        )) {
+            MultiAddSheet()
+        }
     }
 
     private func addRepo() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
+        panel.allowsMultipleSelection = true
         panel.allowedContentTypes = [.folder, UTType(filenameExtension: "code-workspace") ?? .json]
-        panel.message = "Select a git repo, parent directory, or .code-workspace file"
+        panel.message = "Select git repos, parent directories, or .code-workspace files"
         panel.prompt = "Add"
 
-        if panel.runModal() == .OK, let url = panel.url {
-            Task {
-                await appVM.smartAdd(url: url)
-            }
+        guard panel.runModal() == .OK else { return }
+        let urls = panel.urls
+        if urls.count == 1, let url = urls.first {
+            Task { await appVM.smartAdd(url: url) }
+        } else if urls.count > 1 {
+            appVM.requestMultiAdd(urls: urls)
         }
     }
 }

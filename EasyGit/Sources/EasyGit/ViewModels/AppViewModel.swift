@@ -23,6 +23,18 @@ final class AppViewModel {
     var showPushSecretsWarning = false
     var detectedSecrets: [GitService.SensitiveMatch] = []
 
+    // Branches management
+    var showManageBranches = false
+
+    // Delete branch
+    var showDeleteBranchConfirmation = false
+    var branchToDelete: String = ""
+    var deleteBranchAlsoRemote = false
+
+    // Multi-add repos
+    var showMultiAddConfirmation = false
+    var multiAddURLs: [URL] = []
+
     let gitService = GitService()
     let logStore = LogStore()
     private var fileWatcher: FileWatcher?
@@ -449,6 +461,67 @@ final class AppViewModel {
         }
     }
 
+    // MARK: - Delete Branch
+
+    func requestDeleteBranch(_ branchName: String) {
+        branchToDelete = branchName
+        deleteBranchAlsoRemote = false
+        showDeleteBranchConfirmation = true
+    }
+
+    func confirmDeleteBranch() async {
+        guard let repo = selectedRepo, !branchToDelete.isEmpty else { return }
+        let logRef = logStore
+        let branch = branchToDelete
+        let alsoRemote = deleteBranchAlsoRemote
+
+        await MainActor.run {
+            self.showDeleteBranchConfirmation = false
+            self.isLoading = true
+            self.statusMessage = "Deleting branch..."
+        }
+
+        do {
+            try await gitService.deleteLocalBranches(at: repo.path, branches: [branch]) { text, isErr in
+                logRef.appendFromBackground(text, kind: isErr ? .stderr : .stdout)
+            }
+            var remoteNote = ""
+            if alsoRemote {
+                do {
+                    try await gitService.deleteRemoteBranch(at: repo.path, branch: branch) { text, isErr in
+                        logRef.appendFromBackground(text, kind: isErr ? .stderr : .stdout)
+                    }
+                    remoteNote = " (local + remote)"
+                } catch {
+                    remoteNote = " (local only — not found on remote)"
+                    await MainActor.run {
+                        logRef.append("Remote branch not found: \(error.localizedDescription)", kind: .stderr)
+                    }
+                }
+            }
+            await loadRepoInfo()
+            let finalNote = remoteNote
+            await MainActor.run {
+                logRef.append("Deleted branch \(branch)\(finalNote)", kind: .info)
+                self.statusMessage = "Branch deleted"
+                self.isLoading = false
+                self.branchToDelete = ""
+            }
+        } catch {
+            await MainActor.run {
+                logRef.append("Delete branch failed: \(error.localizedDescription)", kind: .stderr)
+                self.statusMessage = "Delete branch failed"
+                self.isLoading = false
+                self.branchToDelete = ""
+            }
+        }
+    }
+
+    func cancelDeleteBranch() {
+        showDeleteBranchConfirmation = false
+        branchToDelete = ""
+    }
+
     // MARK: - Push / Pull
 
     func push() async {
@@ -610,6 +683,58 @@ final class AppViewModel {
         }
         _ = await MainActor.run {
             NSWorkspace.shared.open(prURL)
+        }
+    }
+
+    // MARK: - Multi-Add Repos
+
+    func requestMultiAdd(urls: [URL]) {
+        multiAddURLs = urls
+        showMultiAddConfirmation = true
+    }
+
+    func confirmMultiAddIndividually() async {
+        let urls = multiAddURLs
+        await MainActor.run {
+            self.showMultiAddConfirmation = false
+            self.multiAddURLs = []
+        }
+        for url in urls {
+            await smartAdd(url: url)
+        }
+    }
+
+    func confirmMultiAddAsGroup(name: String) async {
+        let urls = multiAddURLs
+        await MainActor.run {
+            self.showMultiAddConfirmation = false
+            self.multiAddURLs = []
+        }
+
+        let group = RepositoryGroup(name: name)
+        await MainActor.run {
+            self.addGroup(group)
+        }
+
+        for url in urls {
+            let path = url.path
+            let isRepo = await gitService.isGitRepository(at: path)
+
+            if isRepo {
+                let repo = Repository(name: url.lastPathComponent, path: path, groupID: group.id)
+                await MainActor.run {
+                    self.addRepository(repo)
+                }
+            } else {
+                // Scan immediate children
+                let children = await scanImmediateChildren(at: url)
+                await MainActor.run {
+                    for var repo in children {
+                        repo.groupID = group.id
+                        self.addRepository(repo)
+                    }
+                }
+            }
         }
     }
 

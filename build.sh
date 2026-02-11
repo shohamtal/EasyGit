@@ -27,6 +27,11 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
+# Copy icon if it exists
+if [ -f "$SCRIPT_DIR/$APP_NAME/Resources/AppIcon.icns" ]; then
+    cp "$SCRIPT_DIR/$APP_NAME/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+fi
+
 # Write Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -41,6 +46,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'EOF'
     <string>com.easygit.app</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleName</key>
     <string>EasyGit</string>
     <key>CFBundlePackageType</key>
@@ -62,6 +69,10 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'EOF'
 </dict>
 </plist>
 EOF
+
+# Ad-hoc code sign (prevents "app is damaged" Gatekeeper error)
+echo "Code signing..."
+codesign --force --deep --sign - "$APP_BUNDLE"
 
 echo ""
 echo "Done! $APP_NAME.app is ready."
