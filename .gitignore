@@ -1,7 +1,9 @@
 .DS_Store
 .build/
 .claude/
+CLAUDE.md
 .swiftpm/
 EasyGit.app/
 designs/
 readme-internal.md
+*.zip
